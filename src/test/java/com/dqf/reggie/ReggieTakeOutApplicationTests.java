@@ -1,4 +1,4 @@
-package com.dqf.reggietakeout;
+package com.dqf.reggie;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
