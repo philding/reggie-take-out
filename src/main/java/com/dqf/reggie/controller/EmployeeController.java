@@ -71,6 +71,7 @@ public class EmployeeController {
     /**
      * 退出
      */
+    @PostMapping("/logout")
     public R<String> logout(HttpServletRequest req) {
         req.getSession().removeAttribute("employee");
         return R.success("退出成功");
