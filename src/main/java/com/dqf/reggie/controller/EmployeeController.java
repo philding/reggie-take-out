@@ -68,5 +68,12 @@ public class EmployeeController {
         return R.success(emp);
     }
 
+    /**
+     * 退出
+     */
+    public R<String> logout(HttpServletRequest req) {
+        req.getSession().removeAttribute("employee");
+        return R.success("退出成功");
+    }
 
 }
