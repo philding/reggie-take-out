@@ -23,7 +23,6 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeService employeeService;
-
     /**
      * 登录页
      * @param request
@@ -65,6 +64,7 @@ public class EmployeeController {
          * 登陆成功,将员工ID写入session并且返回
          */
         request.getSession().setAttribute("employee", emp.getId());
+
         return R.success(emp);
     }
 
