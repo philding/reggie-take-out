@@ -1,17 +1,16 @@
 package com.dqf.reggie.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.dqf.reggie.common.R;
 import com.dqf.reggie.entity.Employee;
 import com.dqf.reggie.service.EmployeeService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cglib.core.Local;
 import org.springframework.util.DigestUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 
@@ -25,8 +24,10 @@ public class EmployeeController {
 
     @Autowired
     private EmployeeService employeeService;
+
     /**
      * 登录页
+     *
      * @param request
      * @param employee
      * @return
@@ -36,7 +37,7 @@ public class EmployeeController {
         /**
          * 将页面提交密码进行加密处理
          */
-        String password =employee.getPassword();
+        String password = employee.getPassword();
         password = DigestUtils.md5DigestAsHex(password.getBytes());
 
         /**
@@ -49,7 +50,6 @@ public class EmployeeController {
         if (emp == null) {
             return R.error("登录失败");
         }
-
         /**
          * 密码比对
          */
@@ -57,11 +57,9 @@ public class EmployeeController {
             return R.error("密码错误");
 
         }
-
         if (emp.getStatus() == 0) {
             return R.error("账号已经禁用");
         }
-
         /**
          * 登陆成功,将员工ID写入session并且返回
          */
@@ -85,18 +83,37 @@ public class EmployeeController {
     @PostMapping
     public R<String> save(HttpServletRequest req, @RequestBody Employee employee) {
         log.info("新增员工信息 {}", employee.toString());
-
-
         employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
         employee.setCreateTime(LocalDateTime.now());
         employee.setUpdateTime(LocalDateTime.now());
-
         long empID = (long) req.getSession().getAttribute("employee");
         employee.setCreateUser(empID);
         employee.setUpdateUser(empID);
-
         employeeService.save(employee);
         return R.success("员工信息保存成功");
     }
 
+    /**
+     * 员工信息分页查询
+     * @param page
+     * @param pageSize
+     * @param name
+     * @return
+     */
+    @GetMapping("/page")
+    public R<Page> page(Integer page, Integer pageSize, String name) {
+        log.info("page = {},pageSize = {},name = {}", page, pageSize, name);
+
+        Page pageInfo =new Page(page, pageSize);
+
+        //构造条件构造器
+        LambdaQueryWrapper<Employee> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.like(StringUtils.isNotEmpty(name), Employee::getName, name);
+        //添加过滤条件
+        queryWrapper.orderByDesc(Employee::getName);
+        //执行查询
+        employeeService.page(pageInfo, queryWrapper);
+        return R.success(pageInfo);
+
+    }
 }
