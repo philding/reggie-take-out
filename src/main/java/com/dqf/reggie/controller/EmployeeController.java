@@ -6,12 +6,14 @@ import com.dqf.reggie.entity.Employee;
 import com.dqf.reggie.service.EmployeeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cglib.core.Local;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 
 /**
  * @author phil
@@ -75,6 +77,26 @@ public class EmployeeController {
     public R<String> logout(HttpServletRequest req) {
         req.getSession().removeAttribute("employee");
         return R.success("退出成功");
+    }
+
+    /**
+     * 新增员工信息
+     */
+    @PostMapping
+    public R<String> save(HttpServletRequest req, @RequestBody Employee employee) {
+        log.info("新增员工信息 {}", employee.toString());
+
+
+        employee.setPassword(DigestUtils.md5DigestAsHex("123456".getBytes()));
+        employee.setCreateTime(LocalDateTime.now());
+        employee.setUpdateTime(LocalDateTime.now());
+
+        long empID = (long) req.getSession().getAttribute("employee");
+        employee.setCreateUser(empID);
+        employee.setUpdateUser(empID);
+
+        employeeService.save(employee);
+        return R.success("员工信息保存成功");
     }
 
 }
